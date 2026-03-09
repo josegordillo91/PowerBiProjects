@@ -1,0 +1,29 @@
+📊 **Proyecto de práctica – Análisis de datos con Power BI**
+
+Realicé un proyecto de análisis de datos simulando el rol de **Analista de Datos** en una empresa de conservas de frutas en proceso de expansión.
+
+El objetivo fue analizar información de **ventas, productos y provincias** para generar insights que ayuden a optimizar la toma de decisiones del negocio.
+
+🔎 **Preguntas de negocio analizadas:**
+
+1️⃣ **¿Dónde conviene instalar el nuevo centro de distribución?**
+Analizando los datos de ventas por provincia para identificar las zonas con mayor demanda y optimizar la logística.
+
+2️⃣ **¿Cuál es el producto con mayor volumen de ventas?**
+Se identificó el producto con mayor cantidad de unidades vendidas para comprender mejor las preferencias del mercado.
+
+3️⃣ **¿Cuál es el mes con mayor volumen de ventas?**
+Se analizó la estacionalidad de las ventas para detectar los períodos de mayor demanda.
+
+🛠 **Herramientas utilizadas:**
+
+* Power BI
+* Modelado de datos
+* Excel / CSV
+* Visualización de datos (mapas, gráficos y métricas)
+
+Este tipo de análisis permite transformar datos en **información útil para la toma de decisiones estratégicas**.
+
+📌 Comparto el dashboard y el proceso de análisis en este proyecto.
+
+#DataAnalytics #PowerBI #DataAnalysis #BusinessIntelligence #DataVisualization #OpenToWork
