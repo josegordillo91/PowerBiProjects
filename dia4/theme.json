@@ -1,0 +1,95 @@
+# ═══════════════════════════════════════════════════════════════════════
+# Power BI Theme Automation with BIBB Theme Generator
+# Copy this entire cell into your Microsoft Fabric Python notebook
+# ═══════════════════════════════════════════════════════════════════════
+
+# 1️⃣ One-off package install
+%pip install --quiet --upgrade semantic-link-labs requests
+
+# 2️⃣ Parameters - Update these with your actual values
+workspace_id = "00000000-0000-0000-0000-000000000000"   # ← Fabric workspace GUID
+report_id   = "00000000-0000-0000-0000-000000000000"    # ← Report GUID (must be PBIR, not PBIX)
+api_email   = "yourname@email.pro"                      # ← Your email for BIBB API
+
+# 3️⃣ Theme configuration - Customize your colors and styles
+styles = {
+    "color1": "#e85399",        # Primary brand color
+    "color2": "#060606",        # Secondary color
+    "color3": "#f2dcee",        # Accent color 1
+    "color4": "#f89833",        # Accent color 2
+    "color5": "#ec75dd",        # Accent color 3
+    "color6": "#ef885d",        # Accent color 4
+    "color7": "#6c6c6c",        # Accent color 5
+    "color8": "#787878",        # Accent color 6
+    "cardbg": "#FFFFFF",        # Card background
+    "text": "#0A2B43",          # Primary text color
+    "background": "#F1F3F6",    # Page background
+    "backgroundImage": False,    # Background image toggle
+    "accent": "#2166AC",        # UI accent color
+    "fontFamily": "Arial",      # Primary font family
+    "themeName": "Dummy Sales Dashboard"
+}
+
+# 4️⃣ Call BIBB Theme Generator API
+import requests, json
+
+print("🔄 Generating theme via BIBB API...")
+endpoint = "https://api.bibb.pro/generate"
+payload  = {"email": api_email, "styles": styles}
+
+try:
+    r = requests.post(endpoint, json=payload, timeout=30)
+    r.raise_for_status()
+    
+    # The service returns the complete theme JSON
+    theme_json = r.json() if isinstance(r.json(), dict) else json.loads(r.text)
+    print(f"🎨 Theme \"{theme_json.get('name', styles.get('themeName'))}\" received!")
+    
+except requests.exceptions.RequestException as e:
+    print(f"❌ API Error: {e}")
+    exit()
+
+# 5️⃣ Apply theme to Power BI report in Fabric
+from sempy_labs.report import connect_report
+
+print("🔄 Connecting to Power BI report...")
+REPORT_JSON_PATH = "definition/report.json"
+
+try:
+    with connect_report(report=report_id,
+                        workspace=workspace_id,
+                        readonly=False) as rpt:
+
+        # Locate existing theme pointer (if any)
+        current_pointer = rpt.get(
+            file_path=REPORT_JSON_PATH,
+            json_path="$.themeCollection.customTheme"
+        ) or {}
+
+        # Handle edge cases with tuple outputs
+        if isinstance(current_pointer, list) and current_pointer:
+            current_pointer = current_pointer[0][1]
+
+        current_name = current_pointer.get("name")
+        current_path = (f"StaticResources/RegisteredResources/{current_name}"
+                        if current_name else None)
+
+        # Smart overwrite or creation
+        if current_path and current_path in rpt.list_paths()["Path"].values:
+            rpt.update(file_path=current_path, payload=theme_json)
+            print(f"♻️  Overwrote existing theme file: {current_name}")
+        else:
+            # Maintain stable file names to avoid duplicates
+            stable_name = "BIBBTheme.json"
+            theme_json["name"] = stable_name.removesuffix(".json")
+            rpt.set_theme(theme_json=theme_json)
+            print(f"🆕 Added theme and set pointer: {stable_name}")
+
+    print("✅ Theme applied successfully — report should open with new theme!")
+    
+except Exception as e:
+    print(f"❌ Report Update Error: {e}")
+    print("💡 Make sure:")
+    print("   • Report ID is correct and in PBIR format")
+    print("   • Workspace ID is correct") 
+    print("   • You have Contributor/Admin access to the workspace")
